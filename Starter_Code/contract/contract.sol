@@ -58,6 +58,11 @@ contract TimeLockWallet {
         recipient.transfer(amount);
     }
 
+    // Return the balance of this contract
+    function balance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
     // Fallback function to deposit funds
     receive() external payable {
         _deposit(msg.sender, msg.value);
