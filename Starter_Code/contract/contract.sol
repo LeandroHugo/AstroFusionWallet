@@ -1,112 +1,77 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.5.0;
 
-interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-}
-
-contract AdvancedCryptocurrencyWallet {
-    address public owner;
-    address public backupOwner; // For deadman switch
+contract AdvancedTimeLockWallet {
+    address payable public owner;
+    address payable public backupOwner; // For deadman switch
     address public secondaryAddress; // For 2FA
 
-    uint256 public lastActivity; // Timestamp of the last activity
-    uint256 public deadmanSwitchTimeout = 365 days; // Default 1 year
+    uint public balance;
+    uint public lockTime;
+    uint public lastCheckIn = now;
+    uint public deadmanSwitchTime = 365 days; // Default 1 year
 
-    struct TokenDetails {
-        uint256 balance;
-        uint256 lockTime;
-        bool secondaryApproval; // Approval from the secondary address
-    }
+    bool public pendingWithdrawal = false;
 
-    mapping(address => TokenDetails) public tokenBalances;
+    event Deposited(address from, uint amount, uint balance);
+    event Withdrawn(address to, uint amount, uint balance);
+    event LockTimeUpdated(uint newLockTime);
+    event CheckIn(address owner);
+    event SecondaryApproval(address secondary);
 
-    event Deposited(address indexed from, address indexed token, uint256 amount);
-    event Withdrawn(address indexed to, address indexed token, uint256 amount);
-    event LockTimeUpdated(address indexed token, uint256 newLockTime);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    event SecondaryApprovalGranted(address indexed token);
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not the contract owner");
-        lastActivity = block.timestamp;
-        _;
-    }
-
-    modifier onlyBackupOwner() {
-        require(msg.sender == backupOwner, "Not the backup owner");
-        _;
-    }
-
-    modifier onlySecondary() {
-        require(msg.sender == secondaryAddress, "Not the secondary address");
-        _;
-    }
-
-    constructor(address _backupOwner, address _secondaryAddress) {
-        require(_backupOwner != address(0), "Backup owner cannot be zero address");
-        require(_secondaryAddress != address(0), "Secondary address cannot be zero address");
-
+    constructor(address _secondaryAddress, address payable _backupOwner) public {
         owner = msg.sender;
-        backupOwner = _backupOwner;
         secondaryAddress = _secondaryAddress;
-
-        lastActivity = block.timestamp;
+        backupOwner = _backupOwner;
     }
 
-    function depositEther() external payable {
-        require(msg.value > 0, "No ETH sent");
-        tokenBalances[address(0)].balance += msg.value;
-        emit Deposited(msg.sender, address(0), msg.value);
-    }
+    function depositAndSetLockTime(uint _lockTimeInSeconds) public payable {
+        require(msg.value > 0, "Must send some ether");
+        balance += msg.value;
 
-    function depositToken(address tokenAddress, uint256 amount) external {
-        require(tokenAddress != address(0), "Invalid token address");
-        require(amount > 0, "No tokens to deposit");
-        IERC20(tokenAddress).transferFrom(msg.sender, address(this), amount);
-        tokenBalances[tokenAddress].balance += amount;
-        emit Deposited(msg.sender, tokenAddress, amount);
-    }
-
-    function grantSecondaryApproval(address tokenAddress) external onlySecondary {
-        tokenBalances[tokenAddress].secondaryApproval = true;
-        emit SecondaryApprovalGranted(tokenAddress);
-    }
-
-    function withdraw(address tokenAddress, uint256 amount) external onlyOwner {
-        require(block.timestamp >= tokenBalances[tokenAddress].lockTime, "Funds are locked");
-        require(tokenBalances[tokenAddress].secondaryApproval, "Secondary approval required for withdrawal");
-        require(amount <= tokenBalances[tokenAddress].balance, "Insufficient funds");
-
-        tokenBalances[tokenAddress].balance -= amount;
-
-        if(tokenAddress == address(0)) {
-            payable(owner).transfer(amount);
-        } else {
-            IERC20(tokenAddress).transfer(owner, amount);
+        if (balance == msg.value) { // Check if this is the initial deposit
+            lockTime = now + _lockTimeInSeconds;
+            emit LockTimeUpdated(lockTime);
         }
-        emit Withdrawn(owner, tokenAddress, amount);
+
+        emit Deposited(msg.sender, msg.value, balance);
     }
 
-    function setLockTime(address tokenAddress, uint256 _lockTimeInSeconds) external onlyOwner {
-        tokenBalances[tokenAddress].lockTime = block.timestamp + _lockTimeInSeconds;
-        emit LockTimeUpdated(tokenAddress, tokenBalances[tokenAddress].lockTime);
+    function requestWithdrawal() public {
+        require(msg.sender == owner, "Only the owner can request withdrawal");
+        require(now >= lockTime, "Wallet is locked");
+        pendingWithdrawal = true;
     }
 
-    function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "New owner cannot be zero address");
-        emit OwnershipTransferred(owner, newOwner);
-        owner = newOwner;
+    function approveWithdrawal() public {
+        require(msg.sender == secondaryAddress, "Only the secondary address can approve withdrawal");
+        require(pendingWithdrawal, "No pending withdrawal to approve");
+
+        uint amount = balance;
+        balance = 0;
+        owner.transfer(amount);
+        pendingWithdrawal = false;
+        emit Withdrawn(owner, amount, 0);
     }
 
-    function claimAfterInactivity() external onlyBackupOwner {
-        require(block.timestamp > lastActivity + deadmanSwitchTimeout, "Owner is still active");
-        emit OwnershipTransferred(owner, backupOwner);
+    function updateLockTime(uint _lockTimeInSeconds) public {
+        require(msg.sender == owner, "Only the owner can update lock time");
+        lockTime = now + _lockTimeInSeconds;
+        emit LockTimeUpdated(lockTime);
+    }
+
+    function checkIn() public {
+        require(msg.sender == owner, "Only the owner can check in");
+        lastCheckIn = now;
+        emit CheckIn(owner);
+    }
+
+    function deadmanSwitch() public {
+        require(msg.sender == backupOwner, "Only the backup owner can trigger the deadman switch");
+        require(now >= lastCheckIn + deadmanSwitchTime, "Owner has checked in recently");
         owner = backupOwner;
     }
 
-    function balanceOf(address tokenAddress) external view returns (uint256) {
-        return tokenBalances[tokenAddress].balance;
+    function() external payable {
+        depositAndSetLockTime(0);
     }
 }
