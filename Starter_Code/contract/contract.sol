@@ -36,6 +36,13 @@ contract TimeLockWallet {
         emit LockTimeUpdated(lockTime);
     }
 
+    // Deposit funds and set the lock time simultaneously
+    function depositAndSetLockTime(uint256 _lockTimeInSeconds) external payable onlyOwner {
+        _deposit(msg.sender, msg.value);
+        lockTime = block.timestamp + _lockTimeInSeconds;
+        emit LockTimeUpdated(lockTime);
+    }
+
     // Withdraw funds if the current time is greater than the lock time
     function withdraw() external onlyOwner {
         require(block.timestamp >= lockTime, "Funds are locked");
