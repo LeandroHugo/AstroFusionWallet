@@ -308,7 +308,7 @@ ABI = [
 # ABI array goes here
 
 # Contract address after you've deployed it
-contract_address = '0x7B9259Ca6EDb5cc380D135164603b89B1D353005'  # Replace with your actual address
+contract_address = '0x433f73771c6532F5168a71bb3f83A1D7aE612cB4'  # Replace with your actual address
 contract = web3.eth.contract(address=contract_address, abi=ABI)
 
 def main():
@@ -369,7 +369,21 @@ def main():
         tx_hash = contract.functions.deadmanSwitch().transact({'from': web3.eth.accounts[0]})
         st.write(f"Ownership claimed by backup owner due to inactivity! Transaction hash: {tx_hash.hex()}")
 
-    # (Optional) Add more functionalities as needed...
+from pages import home, admin_dashboard, transaction_history, help_support, user_dashboard
+
+PAGES = {
+    "Home": home,
+    "Admin Dashboard": admin_dashboard,
+    "Transaction History": transaction_history,
+    "Help & Support": help_support,
+    "User Dashboard": user_dashboard
+}
+
+def main():
+    st.sidebar.title('Navigation')
+    selection = st.sidebar.radio("Go to", list(PAGES.keys()))
+    page = PAGES[selection]
+    page.app()
 
 if __name__ == "__main__":
     main()
