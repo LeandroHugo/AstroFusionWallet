@@ -33,7 +33,7 @@ st.set_page_config(page_title="🦙💬 Llama 2 Chatbot")
 with st.sidebar:
     st.title('🦙💬 Llama 2 Chatbot')
     # Load the GIF from the 'assets' folder with a specified width
-    st.image("my_gif.gif", width=300)
+    # st.image("my_gif.gif", width=300)
     if 'REPLICATE_API_TOKEN' in st.secrets:
         st.success('API key already provided!', icon='✅')
         replicate_api = st.secrets['REPLICATE_API_TOKEN']
