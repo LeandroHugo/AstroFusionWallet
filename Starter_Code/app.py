@@ -8,57 +8,6 @@ web3 = Web3(Web3.HTTPProvider(GANACHE_URL))
 # Use the ABI provided (the one you shared previously)
 ABI = [
 	{
-		"constant": False,
-		"inputs": [],
-		"name": "approveWithdrawal",
-		"outputs": [],
-		"payable": False,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": False,
-		"inputs": [],
-		"name": "checkIn",
-		"outputs": [],
-		"payable": False,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": False,
-		"inputs": [],
-		"name": "deadmanSwitch",
-		"outputs": [],
-		"payable": False,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": False,
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_lockTimeInSeconds",
-				"type": "uint256"
-			}
-		],
-		"name": "depositAndSetLockTime",
-		"outputs": [],
-		"payable": True,
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"constant": False,
-		"inputs": [],
-		"name": "requestWithdrawal",
-		"outputs": [],
-		"payable": False,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -140,21 +89,6 @@ ABI = [
 		"type": "event"
 	},
 	{
-		"constant": False,
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_lockTimeInSeconds",
-				"type": "uint256"
-			}
-		],
-		"name": "updateLockTime",
-		"outputs": [],
-		"payable": False,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"anonymous": False,
 		"inputs": [
 			{
@@ -183,6 +117,15 @@ ABI = [
 		"payable": True,
 		"stateMutability": "payable",
 		"type": "fallback"
+	},
+	{
+		"constant": False,
+		"inputs": [],
+		"name": "approveWithdrawal",
+		"outputs": [],
+		"payable": False,
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"constant": True,
@@ -215,6 +158,24 @@ ABI = [
 		"type": "function"
 	},
 	{
+		"constant": False,
+		"inputs": [],
+		"name": "checkIn",
+		"outputs": [],
+		"payable": False,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": False,
+		"inputs": [],
+		"name": "deadmanSwitch",
+		"outputs": [],
+		"payable": False,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"constant": True,
 		"inputs": [],
 		"name": "deadmanSwitchTime",
@@ -227,6 +188,21 @@ ABI = [
 		],
 		"payable": False,
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": False,
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_lockTimeInSeconds",
+				"type": "uint256"
+			}
+		],
+		"name": "depositAndSetLockTime",
+		"outputs": [],
+		"payable": True,
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
@@ -290,6 +266,15 @@ ABI = [
 		"type": "function"
 	},
 	{
+		"constant": False,
+		"inputs": [],
+		"name": "requestWithdrawal",
+		"outputs": [],
+		"payable": False,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"constant": True,
 		"inputs": [],
 		"name": "secondaryAddress",
@@ -303,12 +288,27 @@ ABI = [
 		"payable": False,
 		"stateMutability": "view",
 		"type": "function"
+	},
+	{
+		"constant": False,
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_lockTimeInSeconds",
+				"type": "uint256"
+			}
+		],
+		"name": "updateLockTime",
+		"outputs": [],
+		"payable": False,
+		"stateMutability": "nonpayable",
+		"type": "function"
 	}
 ]
 # ABI array goes here
 
 # Contract address after you've deployed it
-contract_address = '0x433f73771c6532F5168a71bb3f83A1D7aE612cB4'  # Replace with your actual address
+contract_address = '0x7B9259Ca6EDb5cc380D135164603b89B1D353005'  # Replace with your actual address
 contract = web3.eth.contract(address=contract_address, abi=ABI)
 
 def main():
