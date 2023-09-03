@@ -1,90 +1,82 @@
-# TimeLockWallet in Solidity
 
-In this guide, we delve into the construction of a basic time lock wallet using Solidity. This wallet is designed to permit deposits at any given moment but sets constraints on withdrawals based on a predetermined time frame.
+---
 
-## Prerequisites
+# AdvancedTimeLockWallet Contract Guide
 
-- An introductory knowledge of Solidity and smart contracts.
-- An environment set up for Ethereum development (for instance, Remix IDE).
+The `AdvancedTimeLockWallet` is a smart contract designed to securely hold funds with a time lock feature and secondary approval. It includes functionalities such as deposits, withdrawals, transfers, and a deadman switch.
 
-## Step 1: Initiate the Contract and Variables
+## Contract Structure
 
-Kick off by laying down the contract and listing out the variables that will be required.
+- **State Variables**:
+  - `owner`: The main owner of the contract.
+  - `admin`: An administrative role with specific permissions.
+  - `secondaryAddress`: A secondary address required for two-factor authentication (2FA) on withdrawals.
+  - `balance`: Current balance of the contract.
+  - `lockTime`: Time until which the funds are locked.
+  - `lastCheckIn`: The last time the owner checked in.
+  - `deadmanSwitchTime`: Time after which the deadman switch can be activated.
+  - `pendingWithdrawal`: Flag to indicate if a withdrawal has been requested.
 
-```solidity
-pragma solidity ^0.5.0;
+- **Events**:
+  - `Deposited`: Triggered when funds are deposited.
+  - `Withdrawn`: Triggered when funds are withdrawn.
+  - `LockTimeUpdated`: Triggered when the lock time is updated.
+  - `CheckIn`: Triggered when the owner checks in.
+  - `Transfer`: Triggered when funds are transferred to another address.
 
-contract TimeLockWallet {
-    address payable public owner;
-    uint public balance;
-    uint public lockTime;
-}
-```
+## Key Functions
 
-## Step 2: Set Up the Constructor
+1. **Constructor**:
+   Initializes the contract with a secondary address and an admin address.
 
-The constructor function is designed to assign the contract's owner to the address that initiates it.
+2. **setAdmin**:
+   Allows the owner to set a new admin.
 
-```solidity
-constructor() public {
-    owner = msg.sender;
-}
-```
+3. **deposit** & **depositWithMessage**:
+   Allows anyone to deposit funds into the contract. The `depositWithMessage` function also logs a custom message with the deposit event.
 
-## Step 3: Structure the Deposit Functions
+4. **requestWithdrawal**:
+   The owner can request a withdrawal of a specific amount. The withdrawal has to be approved by the secondary address.
 
-We'll construct two deposit functions. The primary deposit function permits any user to place funds into the wallet. It ensures the transaction value is positive. The secondary one, `depositAndSetLockTime`, sets the `lockTime` during the initial deposit.
+5. **approveWithdrawal**:
+   The secondary address can approve a withdrawal after it has been requested.
 
-```solidity
-function deposit() public payable {
-    require(msg.value > 0, "Must send some ether");
-    balance += msg.value;
-}
+6. **updateLockTime**:
+   The admin can update the lock time of the contract.
 
-function depositAndSetLockTime(uint _lockTimeInSeconds) public payable {
-    require(msg.value > 0, "Must send some ether");
-    balance += msg.value;
+7. **checkIn**:
+   The owner can check in, which resets the `lastCheckIn` state variable.
 
-    if (balance == msg.value) { 
-        lockTime = now + _lockTimeInSeconds;
-    }
-}
-```
+8. **deadmanSwitch**:
+   The owner can transfer ownership to a new owner using the deadman switch. 
 
-## Step 4: Draft the Withdraw Function
+9. **transfer**:
+   The owner can transfer funds to another address.
 
-The `withdraw` function enables the owner to retrieve funds from the contract. It verifies if the current time surpasses the `lockTime` before authorizing the withdrawal.
+10. **Fallback function**:
+   Allows the contract to receive funds.
 
-```solidity
-function withdraw() public {
-    require(msg.sender == owner, "Only the owner can withdraw");
-    require(now >= lockTime, "Wallet is locked");
+---
 
-    uint amount = balance;
-    balance = 0;
-    owner.transfer(amount);
-}
-```
+## Usage Guide
 
-## Step 5: Create the Deadman Switch
+1. **Deployment**:
+   Deploy the contract by providing a secondary address and an admin address.
 
-The `deadmanSwitch` is a function that acts as a safety protocol, letting the existing owner transfer ownership to another address in cases of emergencies.
+2. **Deposits**:
+   Anyone can deposit funds into the contract using the `deposit` or `depositWithMessage` functions.
 
-```solidity
-function deadmanSwitch(address payable newOwner) public {
-    require(msg.sender == owner, "Only the owner can use the deadman switch");
-    owner = newOwner;
-}
-```
+3. **Withdrawals**:
+   - The owner requests a withdrawal using `requestWithdrawal`.
+   - The secondary address approves the withdrawal using `approveWithdrawal`.
 
-## Step 6: Design the Fallback Function
+4. **Transfers**:
+   The owner can send funds to any Ethereum address using the `transfer` function.
 
-The fallback function is structured to invoke the `deposit` function whenever the contract receives ether.
+5. **Lock Time**:
+   The admin can update the lock time using the `updateLockTime` function.
 
-```solidity
-function() external payable {
-    depositAndSetLockTime(0);
-}
-```
+6. **Deadman Switch**:
+   If required, the owner can transfer ownership to a new address using the `deadmanSwitch` function.
 
-Congratulations! You have now successfully fashioned a rudimentary time lock wallet using Solidity. This wallet is capable of receiving deposits at any point in time but imposes limitations on withdrawals based on a pre-set duration.
+---
