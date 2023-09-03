@@ -3,7 +3,6 @@
 
 # AstroFusion Wallet 🌌
 
-![AstroFusion Logo](https://path_to_logo_image.png)
 
 **Embark on a cosmic journey towards financial freedom with AstroFusion Wallet!** In the vast expanse of the financial universe, AstroFusion emerges as a beacon of hope, guiding you through the nebulae of investments, cryptocurrencies, and secure transactions.
 
