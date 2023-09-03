@@ -3,9 +3,9 @@ import time
 
 # Dummy data for the sake of this example
 USER_DATA = {
-    "name": "John Doe",
+    "name": "Bryce Pribyl",
     "wallet_address": "0x433f73771c6532F5168a71bb3f83A1D7aE612cB4",
-    "balance": 100.5,
+    "balance": 100000.5,
     "profile_pic": "https://www.w3schools.com/howto/img_avatar.png"
 }
 
