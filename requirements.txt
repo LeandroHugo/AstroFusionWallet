@@ -1,0 +1,14 @@
+Pillow
+datetime
+joblib
+matplotlib
+numpy
+openai
+pandas
+plotly
+replicate
+requests
+streamlit
+streamlit_elements
+web3
+st_on_hover_tabs
