@@ -7,7 +7,75 @@ w3 = Web3(Web3.HTTPProvider(WEB3_INFURA_URL))
 
 # Contract details (Replace these with your actual deployed contract addresses and ABIs)
 PREMIUM_TIMELOCK_ADDRESS = '0x...'
-PREMIUM_TIMELOCK_ABI = [...]
+PREMIUM_TIMELOCK_ABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "_token",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_beneficiary",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_releaseTime",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "beneficiary",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "release",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "releaseTime",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "token",
+		"outputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
 
 ELITE_DEADMAN_ADDRESS = '0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8'
 ELITE_DEADMAN_ABI = [
@@ -95,8 +163,34 @@ ELITE_DEADMAN_ABI = [
 	}
 ]
 
-CUSTOMIZED_SOLUTIONS_ADDRESS = '0x...'
-CUSTOMIZED_SOLUTIONS_ABI = [...]
+CUSTOMIZED_SOLUTIONS_ADDRESS = '0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47'
+CUSTOMIZED_SOLUTIONS_ABI = [
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "executeCustomFunction",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "owner",
+		"outputs": [
+			{
+				"internalType": "address payable",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
 
 def run():
     st.title('🌟 Next Level Equity Clients Hub')
