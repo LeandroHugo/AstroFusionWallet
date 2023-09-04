@@ -2,28 +2,39 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import joblib
+import plost  # Import the new plotting library
 
-# Ethereum Prediction Model
-def eth_prediction_model():
-    return np.random.randint(2000, 4000)
+# Load the trained models
+decision_tree_model = joblib.load('decision_tree_model.joblib')
+linear_regression_model = joblib.load('linear_regression_model.joblib')
+neural_network_model = joblib.load('neural_network_model.joblib')
+random_forest_model = joblib.load('random_forest_model.joblib')
 
-# Generate mock Ethereum data for visualization
-def generate_random_data():
+# Load the historical data
+data = pd.read_csv('ethereum_historical_data.csv')
+
+# Get the most recent price from the dataset
+current_price = data['price'].iloc[-1]
+
+def get_predictions(features):
+    dt_pred = decision_tree_model.predict(features)
+    lr_pred = linear_regression_model.predict(features)
+    nn_pred = neural_network_model.predict(features)
+    rf_pred = random_forest_model.predict(features)
+    
+    return dt_pred, lr_pred, nn_pred, rf_pred
+
+# Mock function for future features, replace with your real function to generate future features
+def generate_future_features():
     return pd.DataFrame({
-        'Date': pd.date_range(start='1/1/2022', periods=30),
-        'Price': np.random.randint(2000, 4000, size=(30)),
-        'Lower_Bound': np.random.randint(1900, 3500, size=(30)),
-        'Upper_Bound': np.random.randint(2100, 4100, size=(30))
+        '10_day_avg': [current_price] * 10,
+        '30_day_avg': [current_price] * 10,
+        'daily_return': [0.02] * 10  # Mock daily return
     })
 
-def dummy_predictor(model):
-    if model == "Linear Regression":
-        return np.random.randint(2100, 2200)
-    elif model == "Decision Tree":
-        return np.random.randint(2200, 2300)
-    elif model == "Neural Network":
-        return np.random.randint(2300, 2400)
-    return np.random.randint(2000, 2500)
+future_features = generate_future_features()
+predictions = get_predictions(future_features)
 
 def main():
     st.set_page_config(page_title="Advanced TimeLock Wallet: ETH Prediction", layout="wide", initial_sidebar_state="collapsed")
@@ -39,17 +50,33 @@ def main():
         """)
 
         # Model Selection and Customization
-        model = st.selectbox("Choose a Prediction Model", ["Linear Regression", "Decision Tree", "Neural Network"])
-        prediction = dummy_predictor(model)
-        st.success(f"Predicted Ethereum Price using {model}: ${prediction}")
+        model = st.selectbox("Choose a Prediction Model", ["Linear Regression", "Decision Tree", "Neural Network", "Random Forest"])
+        
+        if model == "Linear Regression":
+            prediction = predictions[1]
+        elif model == "Decision Tree":
+            prediction = predictions[0]
+        elif model == "Neural Network":
+            prediction = predictions[2]
+        else:
+            prediction = predictions[3]
+        
+        # Show today's price
+        st.write(f"Today's Ethereum Price: ${current_price}")
+        st.success(f"Predicted Ethereum Prices for the next 10 days using {model}: {prediction}")
 
-        # Interactive Visualization
-        st.header("Ethereum Price Trends")
-        df = generate_random_data()
-        fig = px.line(df, x='Date', y='Price', title='Ethereum Price Over Time')
-        fig.add_scatter(x=df['Date'], y=df['Lower_Bound'], mode='lines', name='Lower Bound')
-        fig.add_scatter(x=df['Date'], y=df['Upper_Bound'], mode='lines', name='Upper Bound')
-        st.plotly_chart(fig)
+        # Interactive Visualization using Plost
+        days = list(range(1, 11))
+        prediction_df = pd.DataFrame({
+            'Day': days,
+            'Predicted_Price': prediction
+        })
+        
+        plost.line_chart(
+            data=prediction_df,
+            x='Day',
+            y='Predicted_Price'
+        )
 
     with col2:
         st.title("Educational Content")
@@ -57,6 +84,7 @@ def main():
         **Linear Regression**: A basic predictive modeling technique that establishes a relationship between two variables.
         **Decision Tree**: A decision support tool that uses a tree-like model of decisions and their possible consequences.
         **Neural Network**: Computational systems inspired by the neural networks found in brains, used to estimate functions that depend on a large amount of unknown inputs.
+        **Random Forest**: An ensemble learning method that operates by constructing multiple decision trees during training and outputs the average prediction of the individual trees for regression problems.
         """)
 
         st.warning("""
