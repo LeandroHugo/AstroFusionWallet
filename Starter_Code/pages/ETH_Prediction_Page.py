@@ -6,13 +6,13 @@ import joblib
 import plost  # Import the new plotting library
 
 # Load the trained models
-decision_tree_model = joblib.load('decision_tree_model.joblib')
-linear_regression_model = joblib.load('linear_regression_model.joblib')
-neural_network_model = joblib.load('neural_network_model.joblib')
-random_forest_model = joblib.load('random_forest_model.joblib')
+decision_tree_model = joblib.load('models/decision_tree_model.joblib')
+linear_regression_model = joblib.load('models/linear_regression_model.joblib')
+neural_network_model = joblib.load('models/neural_network_model.joblib')
+random_forest_model = joblib.load('models/random_forest_model.joblib')
 
 # Load the historical data
-data = pd.read_csv('ethereum_historical_data.csv')
+data = pd.read_csv('models/ethereum_historical_data.csv')
 
 # Get the most recent price from the dataset
 current_price = data['price'].iloc[-1]
@@ -25,13 +25,15 @@ def get_predictions(features):
 
     return dt_pred, lr_pred, nn_pred, rf_pred
 
-# Mock function for future features, replace with your real function to generate future features
+# Function to generate future features
 def generate_future_features():
-    return pd.DataFrame({
-        '10_day_avg': [current_price] * 10,
-        '30_day_avg': [current_price] * 10,
-        'daily_return': [0.02] * 10  # Mock daily return
+    future_features = pd.DataFrame({
+        '10_day_avg': [data['price'].rolling(window=10).mean().iloc[-1]] * 10,
+        '30_day_avg': [data['price'].rolling(window=30).mean().iloc[-1]] * 10,
+        'daily_return': [data['price'].pct_change().iloc[-1]] * 10  # Last daily return
     })
+    # Ensure the order of features matches the order during training
+    return future_features[['10_day_avg', '30_day_avg', 'daily_return']]
 
 future_features = generate_future_features()
 predictions = get_predictions(future_features)
