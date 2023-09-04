@@ -9,6 +9,7 @@ import replicate  # Importing replicate module
 import os
 import requests
 from PIL import Image
+import os
 
 # Load the trained models
 decision_tree_model = joblib.load('models/decision_tree_model.joblib')
@@ -41,18 +42,31 @@ def generate_future_features():
 future_features = generate_future_features()
 predictions = get_predictions(future_features)
 
-# Function for generating LLaMA2 response
-def generate_llama2_response(prompt_input):
-    string_dialogue = "You are a helpful assistant. You do not respond as 'User' or pretend to be 'User'. You only respond once as 'Assistant'."
-    for dict_message in st.session_state.messages:
-        if dict_message["role"] == "user":
-            string_dialogue += "User: " + dict_message["content"] + "\n\n"
-        else:
-            string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
-    output = replicate.run('a16z-infra/llama13b-v2-chat:df7690f1994d94e96ad9d568eac121aecf50684a0b0963b25a41cc40061269e5', 
-                        input={"prompt": f"{string_dialogue} {prompt_input} Assistant: ",
-                                "temperature": 0.1, "top_p": 0.9, "max_length": 512, "repetition_penalty": 1})
-    return output
+# Initialize OpenAI API key
+openai.api_key = st.secrets['openai']['api_key']
+
+# Function to generate text-based chat responses using OpenAI's GPT-3
+def generate_text(prompt):
+    headers = {
+        "Authorization": f"Bearer {st.secrets['openai']['api_key']}",
+        "Content-Type": "application/json"
+    }
+
+    endpoint = "https://api.openai.com/v1/chat/completions"
+    data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+        "max_tokens": 150
+    }
+
+    response = requests.post(endpoint, headers=headers, json=data)
+    if response.status_code == 200:
+        content = response.json()
+        assistant_message = content['choices'][0]['message']['content']
+        return assistant_message
+    else:
+        return f"Error {response.status_code}: {response.text}"
 
 def main():
     st.set_page_config(page_title="Advanced TimeLock Wallet: ETH Prediction", layout="wide", initial_sidebar_state="collapsed")
@@ -112,7 +126,7 @@ def main():
     st.subheader("Ask our AI Assistant")
     st.write("Have questions about these models? Ask our AI assistant for more information.")
 
-    # Store LLM generated responses
+    # Store chatbot generated responses
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
 
@@ -135,14 +149,11 @@ def main():
         if st.session_state.messages[-1]["role"] != "assistant":
             with st.chat_message("assistant"):
                 with st.spinner("Thinking..."):
-                    response = generate_llama2_response(prompt)
+                    response = generate_text(prompt)
                     placeholder = st.empty()
-                    full_response = response
-                    placeholder.markdown(full_response)
-            message = {"role": "assistant", "content": full_response}
+                    placeholder.markdown(response)
+            message = {"role": "assistant", "content": response}
             st.session_state.messages.append(message)
 
-# ... [the rest of your functions and additional code]
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
