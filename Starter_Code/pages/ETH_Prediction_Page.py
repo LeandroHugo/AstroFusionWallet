@@ -22,7 +22,7 @@ def get_predictions(features):
     lr_pred = linear_regression_model.predict(features)
     nn_pred = neural_network_model.predict(features)
     rf_pred = random_forest_model.predict(features)
-    
+
     return dt_pred, lr_pred, nn_pred, rf_pred
 
 # Mock function for future features, replace with your real function to generate future features
@@ -43,7 +43,7 @@ def main():
 
     with col1:
         st.title('Advanced TimeLock Wallet: ETH Prediction Page')
-        
+
         st.write("""
         Dive deep into Ethereum predictions. Explore various models, visualize historical data, and get insights tailored for the 
         Advanced TimeLock Wallet users.
@@ -51,7 +51,7 @@ def main():
 
         # Model Selection and Customization
         model = st.selectbox("Choose a Prediction Model", ["Linear Regression", "Decision Tree", "Neural Network", "Random Forest"])
-        
+
         if model == "Linear Regression":
             prediction = predictions[1]
         elif model == "Decision Tree":
